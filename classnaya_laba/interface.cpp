@@ -86,23 +86,23 @@ void interface::show_teacher_interface(char* my_login){
         switch (call){
             case 1 : add_to_group(a); break;
             case 2 : show_curr_groups(a); break;
-            case 3 : add_group(a, i); break;
-            case 4 : delete_group(a, i); break;
+            case 3 : add_group(teachers, i, len); break;
+            case 4 : delete_group(teachers, i, len); break;
             case 5 : to_moove_student(a); break;
             case 6 : give_grades_or_attendance(a, 0); break;
             case 7 : to_final_rate(a); break;
             case 8 : give_grades_or_attendance(a, 1); break;
-            case 9 : add_subject(a); break;
-            case 10 : delete_subject(a); break;
+            case 9 : add_subject(teachers, i, len); break;
+            case 10 : delete_subject(teachers, i, len); break;
             case 0 : exit(0);
         }
     }
 }
 
 
-void interface::delete_subject(teacher a){
+void interface::delete_subject(vector <teacher> teachers, int index, int len){
     char my_login[50];
-    a.get_login(my_login);
+    teachers[index].get_login(my_login);
 
     subject_index ex;
     ifstream f;
@@ -112,7 +112,7 @@ void interface::delete_subject(teacher a){
 
     int t_subjects[100], i = 0;
     for (i; i < 100; i++) t_subjects[i] = -1;
-    a.get_subjects(t_subjects);
+    teachers[index].get_subjects(t_subjects);
 
     int subj = ask_to_subj(t_subjects, ex);
     subj = t_subjects[subj];
@@ -131,23 +131,12 @@ void interface::delete_subject(teacher a){
         i++;
     }
 
-    vector <teacher> teachers;
-    int len = get_people(teachers);
-
-    for (i = 0; i < len; i++){
-        char t_login[50];
-        teachers[i].get_login(t_login);
-        if (!strcmp(t_login, my_login)){
-            teachers[i].set_subject(t_subjects);
-            break;
-        }
-    }
-
+    teachers[index].set_subject(t_subjects);
     dump_data(len, teachers);
 }
 
 
-void interface::add_subject(teacher a){
+void interface::add_subject(vector <teacher> teachers, int index, int len){
 
     subject_index ex;
     ifstream f;
@@ -170,36 +159,24 @@ void interface::add_subject(teacher a){
     ofstream ff;
     ff.open(subject_filename);
     ff.write((char*)&ex, sizeof(subject_index));
-
+    ff.close();
 
     char my_login[50];
-    a.get_login(my_login);
+    teachers[index].get_login(my_login);
 
-    vector <teacher> teachers;
-    int len = get_people(teachers), i = 0;
 
-    for (i; i < len; i++){
-        char t_login[50];
-        teachers[i].get_login(t_login);
-        if (!(strcmp(t_login, my_login))){
+    int t_subjects[100], j = 0;
+    for (j; j < 100; j++) t_subjects[j] = -1;
 
-            int t_subjects[100], j = 0;
-            for (j; j < 100; j++) t_subjects[j] = -1;
-
-            teachers[i].get_subjects(t_subjects);
-            for (j = 0; j < 100; j++){
-                if (t_subjects[j] == -1){
-                    t_subjects[j] = res;
-                    cout << "res = " << res;
-                    break;
-                }
-            }
-
-            teachers[i].set_subject(t_subjects);
-
+    teachers[index].get_subjects(t_subjects);
+    for (j = 0; j < 100; j++){
+        if (t_subjects[j] == -1){
+            t_subjects[j] = res;
             break;
         }
     }
+
+    teachers[index].set_subject(t_subjects);
 
     dump_data(len, teachers);
 
@@ -496,8 +473,10 @@ void interface::give_grades_or_attendance(teacher a, int attendance){
 
 void interface::to_moove_student(teacher a){
     vector <student> students;
-    int len = get_people(students), i = 0, new_group, flag = 0;
-
+    int len = get_people(students), i = 0, new_group, flag = 0, flag2 = 0;
+    int new_subjects[100], s_index;
+    for (i; i < 100; i++) new_subjects[i] = -1;
+    i = 0;
     char login[50];
     cout << endl;
     cin_login(login);
@@ -509,6 +488,7 @@ void interface::to_moove_student(teacher a){
         students[i].get_login(s_login);
 
         if (!strcmp(login, s_login)){
+            s_index = i;
             int s_group = students[i].get_group();
 
             int my_groups[100]{}, j = 0;
@@ -521,10 +501,12 @@ void interface::to_moove_student(teacher a){
                 }
                 j++;
             }
+        }
 
-            if (!flag) break;
-            students[i].set_group(new_group);
+        else if (students[i].get_group() == new_group){
 
+            students[i].get_subjects(new_subjects);
+            flag2 = 1;
         }
     }
 
@@ -532,22 +514,23 @@ void interface::to_moove_student(teacher a){
         cout << "Net dostupa k studentu, t.k. on ne prinadlezit vashim gruppam!\n";
     }
     else{
+        students[s_index].set_group(new_group);
+        if (flag2) students[s_index].set_subject(new_subjects);
         dump_data(len, students);
         cout << "Gruppa u studenta " << login << " uspeshno izmenena!\n";
     }
+
 }
 
 
 
-void interface::delete_group(teacher a, int index){
-    vector <teacher> teachers;
-    int len = get_people(teachers), i = 0;
+void interface::delete_group(vector <teacher> teachers, int index, int len){
 
     int group;
     cout << "\nVvedite gruppu: ";
     cin >> group;
-    int t_groups[100]{};
-    a.get_groups(t_groups);
+    int t_groups[100]{}, i = 0;
+    teachers[index].get_groups(t_groups);
 
     while (t_groups[i]){
 
@@ -587,17 +570,16 @@ void interface::dump_data(int len, vector <student> &arr){
     f.close();
 }
 
-void interface::add_group(teacher a, int index){
-    vector <teacher> teachers;
-    int len = get_people(teachers), i = 0;
+void interface::add_group(vector <teacher> teachers, int index, int len){
 
-    int group;
+    int group, t_groups[100]{};
+    teachers[index].get_groups(t_groups);
+
 ///Проверка на наличие введенной группы
     while (1){
         cout << "\nVvedite gruppu: ";
         cin >> group;
-        int t_groups[100]{}, j = 0, flag = 1;
-        a.get_groups(t_groups);
+        int j = 0, flag = 1;
         while (t_groups[j]){
             if (t_groups[j] == group){
                 cout << "U vas uze est eta gruppa!\n";
@@ -609,9 +591,7 @@ void interface::add_group(teacher a, int index){
         if (flag) break;
     }
 
-    int t_groups[100]{};
-    teachers[index].get_groups(t_groups);
-
+    int i = 0;
     while (1){
         if (t_groups[i] == 0){
             t_groups[i] = group;

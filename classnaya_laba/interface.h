@@ -43,9 +43,9 @@ public:
 
     void dump_data(int len, vector <student> &arr);
 
-    void add_group(teacher a, int index);
+    void add_group(vector <teacher> teachers, int index, int len);
 
-    void delete_group(teacher a, int index);
+    void delete_group(vector <teacher> teachers, int index, int len);
 
     void to_moove_student(teacher a);
 
@@ -53,9 +53,9 @@ public:
 
     void to_final_rate(teacher a);
 
-    void add_subject(teacher a);
+    void add_subject(vector <teacher> teachers, int index, int len);
 
-    void delete_subject(teacher a);
+    void delete_subject(vector <teacher> teachers, int index, int len);
 
     void show_teacher_interface(char* my_login);
 
