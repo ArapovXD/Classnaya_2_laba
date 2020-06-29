@@ -21,6 +21,8 @@ private:
 public:
     interface(int val, char* sf_name , char* tf_name, char*  sbjf_name, char* grpf_name);
 
+    void lockdown();
+
     void show_interface();
 
     void authorization(int call);

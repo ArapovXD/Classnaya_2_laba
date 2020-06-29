@@ -108,6 +108,7 @@ void interface::delete_subject(vector <teacher> teachers, int index, int len){
     subject_index ex;
     ifstream f;
     f.open(subject_filename);
+    if (!f) lockdown();
     f.read((char*)&ex, sizeof(subject_index));
     f.close();
 
@@ -142,6 +143,7 @@ void interface::add_subject(vector <teacher> teachers, int index, int len){
     subject_index ex;
     ifstream f;
     f.open(subject_filename);
+    if (!f) lockdown();
     f.read((char*)&ex, sizeof(subject_index));
     f.close();
 
@@ -159,6 +161,7 @@ void interface::add_subject(vector <teacher> teachers, int index, int len){
 
     ofstream ff;
     ff.open(subject_filename);
+    if (!ff) lockdown();
     ff.write((char*)&ex, sizeof(subject_index));
     ff.close();
 
@@ -191,6 +194,7 @@ void interface::show_final_rate(student a){
     subject_index ex;
     ifstream f;
     f.open(subject_filename);
+    if (!f) lockdown();
     f.read((char*)&ex, sizeof(subject_index));
     f.close();
 
@@ -218,6 +222,7 @@ void interface::to_final_rate(teacher a){
     subject_index ex;
     ifstream f;
     f.open(subject_filename);
+    if (!f) lockdown();
     f.read((char*)&ex, sizeof(subject_index));
     f.close();
 
@@ -327,6 +332,7 @@ void interface::show_grades_or_attendance(student a, int attendance){
     subject_index ex;
     ifstream f;
     f.open(subject_filename);
+    if (!f) lockdown();
     f.read((char*)&ex, sizeof(subject_index));
     f.close();
 
@@ -400,6 +406,7 @@ void interface::give_grades_or_attendance(teacher a, int attendance){
     subject_index ex;
     ifstream f;
     f.open(subject_filename);
+    if (!f) lockdown();
     f.read((char*)&ex, sizeof(subject_index));
     f.close();
 
@@ -561,11 +568,13 @@ void interface::dump_data(int len, vector <teacher> &arr){
     int i;
     ofstream f;
     f.open(teacher_filename);
+    if (!f) lockdown();
     for (i = 0; i < len; i++) f.write((char*)&arr[i], sizeof(teacher));
     f.close();
 
     ofstream ff;
     ff.open(groups_filename);
+    if (!ff) lockdown();
 
     i = 0;
     for (i; i < len; i ++){
@@ -584,6 +593,7 @@ void interface::dump_data(int len, vector <student> &arr){
     int i;
     ofstream f;
     f.open(student_filename);
+    if (!f) lockdown();
     for (i = 0; i < len; i++) f.write((char*)&arr[i], sizeof(student));
     f.close();
 }
@@ -719,6 +729,7 @@ void interface::add_to_group(teacher a){
     subject_index ex;
     ifstream f;
     f.open(subject_filename);
+    if (!f) lockdown();
     f.read((char*)&ex, sizeof(subject_index));
     f.close();
 
@@ -803,6 +814,7 @@ void interface::add_to_group(teacher a){
     append_data(b);
     ofstream ff;
     ff.open(subject_filename);
+    if (!ff) lockdown();
     ff.write((char*)&ex, sizeof(subject_index));
     ff.close();
     cout << "Student uspeshno dobavlen!\n";
@@ -840,6 +852,7 @@ int interface::get_people(vector <teacher> &arr){
     int i = 0;
     f.open(teacher_filename);
     ff.open(groups_filename);
+    if (!f || !ff) lockdown();
 
     teacher a;
 
@@ -867,6 +880,7 @@ int interface::get_people(vector <student> &arr){
     ifstream f;
     int i = 0;
     f.open(student_filename);
+    if (!f) lockdown();
 
     student a;
     while (f.read((char*)&a, sizeof(student))){
@@ -885,6 +899,7 @@ int interface::is_login_exist(char* login){
     ifstream f2;
     f1.open(student_filename);
     f2.open(teacher_filename);
+    if (!f1 || !f2) lockdown();
 
     vector <teacher> teachers;
     int len_t = get_people(teachers);
@@ -923,11 +938,13 @@ void interface::append_data(teacher &a){
 
     fstream f;
     f.open(teacher_filename, fstream::app);
+    if (!f) lockdown();
     f.write((char*)&a, sizeof(teacher));
     f.close();
 
     fstream ff;
     ff.open(groups_filename, fstream::app);
+    if (!ff) lockdown();
 
     int len = a.get_len_groups(), i = 0;
     int* groups = new int[len];
@@ -939,6 +956,7 @@ void interface::append_data(teacher &a){
 void interface::append_data(student &a){
     fstream f;
     f.open(student_filename, fstream::app);
+    if (!f) lockdown();
     f.write((char*)&a, sizeof(student));
     f.close();
 }
@@ -949,6 +967,7 @@ void interface::show_registration_interface(){
     subject_index ex;
     ifstream f;
     f.open(subject_filename);
+    if (!f) lockdown();
     f.read((char*)&ex, sizeof(subject_index));
     f.close();
 
@@ -1047,6 +1066,7 @@ void interface::show_registration_interface(){
     append_data(a);
     ofstream ff;
     ff.open(subject_filename);
+    if (!ff) lockdown();
     ff.write((char*)&ex, sizeof(subject_index));
     ff.close();
     cout << "Uspeshnaya registraciya!\n";
@@ -1054,4 +1074,6 @@ void interface::show_registration_interface(){
 // Заканчиваем загрузку учителя........................................................
 }
 
-
+void interface::lockdown(){
+    exit(0);
+}
