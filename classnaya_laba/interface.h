@@ -17,8 +17,9 @@ private:
     char student_filename[50];
     char teacher_filename[50];
     char subject_filename[50];
+    char groups_filename[50];
 public:
-    interface(int val, char* sf_name , char* tf_name, char*  sbjf_name);
+    interface(int val, char* sf_name , char* tf_name, char*  sbjf_name, char* grpf_name);
 
     void show_interface();
 

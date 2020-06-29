@@ -17,14 +17,15 @@ void teacher::set_subject(int* subj){
 }
 
 
-void teacher::set_groups(int* grp){
-    int i = 0;
-    for (i; i < 100; i++) groups[i] = 0;
-    i = 0;
+void teacher::set_groups(int* grp, int size_groups){
 
-    while (grp[i] != 0){
+    len_groups = size_groups;
+    groups = new int[len_groups];
+
+    int i = 0;
+
+    for (i; i < len_groups; i++){
         groups[i] = grp[i];
-        i++;
     }
 }
 
@@ -48,10 +49,13 @@ void teacher::get_subjects(int* to_copy){
 void teacher::get_groups(int* to_copy){
     int i = 0;
 
-    while (groups[i] != 0){
+    for (i; i < len_groups; i++){
         to_copy[i] = groups[i];
-        i++;
     }
+}
+
+int teacher::get_len_groups(){
+    return len_groups;
 }
 
 void teacher::get_login(char* to_copy){

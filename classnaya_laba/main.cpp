@@ -8,21 +8,17 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
-/*
-    if (argc != 4){             ///Завершить программу, если поступило не 3 аргумента в мейн
-        cout << "Nujno 3 argumenta! 1 - file s studentami, 2 - file s uchitelami, 3 - file s predmetami\n";
+
+    if (argc != 5){             ///Завершить программу, если поступило не 3 аргумента в мейн
+        cout << "Nujno 4 argumenta! 1 - file s studentami, 2 - file s uchitelami, 3 - file s predmetami, 4 - file s gruppami u4itela\n";
         exit(0);
     }
-*/
-    char a[50] = "students.bin";
-    char b[50] = "teachers.bin";
-    char c[50] = "subject_class.bin";
 
     while (1){
         cout << "\nstudent - 1, U4itel - 2, registraciya (tolko dla uchiteley) - 3 vihod - 0 ";
         int who;
         cin >> who;
-        interface ex(who, a, b, c);
+        interface ex(who, argv[1], argv[2], argv[3], argv[4]);
         ex.show_interface();
     }
 

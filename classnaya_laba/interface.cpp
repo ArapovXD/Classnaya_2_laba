@@ -5,11 +5,12 @@
 #include "interface.h"
 using namespace std;
 
-interface::interface(int val, char* sf_name, char* tf_name, char* sbjf_name){
+interface::interface(int val, char* sf_name, char* tf_name, char* sbjf_name, char* grpf_name){
     call = val;
     strcpy(student_filename, sf_name);
     strcpy(teacher_filename, tf_name);
     strcpy(subject_filename, sbjf_name);
+    strcpy(groups_filename, grpf_name);
 }
 
 void interface::show_interface(){
@@ -408,6 +409,7 @@ void interface::give_grades_or_attendance(teacher a, int attendance){
 
     int subj = ask_to_subj(t_subjects, ex);
 
+
     int s_subjects[100], j = 0;
     for (j; j < 100; j++) s_subjects[j] = -1;
     int group, res = 0, flag = 0;
@@ -429,13 +431,13 @@ void interface::give_grades_or_attendance(teacher a, int attendance){
     }
 
     j = 0;
-    int t_groups[100]{}, flag2 = 0;
+    int flag2 = 0, len_gr = a.get_len_groups();
+    int* t_groups = new int[len_gr];
     a.get_groups(t_groups);
-    while(t_groups[j]){
+    for(j; j < len_gr; j++){
         if (t_groups[j] == group){
             flag2 = 1;
         }
-        j++;
     }
 
     if (!flag2) cout << "Net dostupa k etoy gruppe!\n";
@@ -460,8 +462,8 @@ void interface::give_grades_or_attendance(teacher a, int attendance){
                 int grade;
                 cin >> grade;
 
-                if (attendance) students[i].set_attendance(subj, month, day, grade);
-                else students[i].set_grade(subj, month, day, grade);
+                if (attendance) students[i].set_attendance(t_subjects[subj], month, day, grade);
+                else students[i].set_grade(t_subjects[subj], month, day, grade);
             }
         }
 
@@ -489,17 +491,16 @@ void interface::to_moove_student(teacher a){
 
         if (!strcmp(login, s_login)){
             s_index = i;
-            int s_group = students[i].get_group();
+            int s_group = students[i].get_group(), j = 0, len_gr = a.get_len_groups();
 
-            int my_groups[100]{}, j = 0;
+            int* my_groups = new int[len_gr];
             a.get_groups(my_groups);
 
-            while (my_groups[j]){
+            for(j; j < len_gr; j++){
                 if (my_groups[j] == s_group){
                     flag = 1;
                     break;
                 }
-                j++;
             }
         }
 
@@ -529,23 +530,23 @@ void interface::delete_group(vector <teacher> teachers, int index, int len){
     int group;
     cout << "\nVvedite gruppu: ";
     cin >> group;
-    int t_groups[100]{}, i = 0;
+    int i = 0, len_gr = teachers[index].get_len_groups();
+    int* t_groups = new int[len_gr];
     teachers[index].get_groups(t_groups);
 
-    while (t_groups[i]){
+    int flag = 0;
+    for(i; i < len_gr; i++){
+
+        if (flag && i != (len_gr - 1)) t_groups[i] = t_groups[i + 1];
 
         if (t_groups[i] == group){
-            int p = t_groups[i + 1];
-            if (p != 0){
-                t_groups[i + 1] = t_groups[i];
-                t_groups[i] = p;
-            }
-            else t_groups[i] = 0;
+            flag = 1;
+            if (i != (len_gr - 1)) t_groups[i] = t_groups[i + 1];
         }
-        i++;
     }
+    if (flag) len_gr--;
 
-    teachers[index].set_groups(t_groups);
+    teachers[index].set_groups(t_groups, len_gr);
 
     dump_data(len, teachers);
 
@@ -555,11 +556,28 @@ void interface::delete_group(vector <teacher> teachers, int index, int len){
 
 
 void interface::dump_data(int len, vector <teacher> &arr){
+
+
     int i;
     ofstream f;
     f.open(teacher_filename);
     for (i = 0; i < len; i++) f.write((char*)&arr[i], sizeof(teacher));
     f.close();
+
+    ofstream ff;
+    ff.open(groups_filename);
+
+    i = 0;
+    for (i; i < len; i ++){
+        int l = arr[i].get_len_groups(), j = 0;
+        int* groups = new int[l];
+        arr[i].get_groups(groups);
+
+        for(j; j < l; j++) ff << groups[j] << " ";
+    }
+
+    ff.close();
+
 }
 
 void interface::dump_data(int len, vector <student> &arr){
@@ -572,7 +590,10 @@ void interface::dump_data(int len, vector <student> &arr){
 
 void interface::add_group(vector <teacher> teachers, int index, int len){
 
-    int group, t_groups[100]{};
+
+    int i = 0, group, len_gr = teachers[index].get_len_groups();
+
+    int* t_groups = new int[len_gr + 1];
     teachers[index].get_groups(t_groups);
 
 ///Проверка на наличие введенной группы
@@ -580,7 +601,7 @@ void interface::add_group(vector <teacher> teachers, int index, int len){
         cout << "\nVvedite gruppu: ";
         cin >> group;
         int j = 0, flag = 1;
-        while (t_groups[j]){
+        for(j; j < len_gr; j++){
             if (t_groups[j] == group){
                 cout << "U vas uze est eta gruppa!\n";
                 flag = 0;
@@ -591,15 +612,10 @@ void interface::add_group(vector <teacher> teachers, int index, int len){
         if (flag) break;
     }
 
-    int i = 0;
-    while (1){
-        if (t_groups[i] == 0){
-            t_groups[i] = group;
-            break;
-        }
-        i++;
-    }
-    teachers[index].set_groups(t_groups);
+    t_groups[len_gr] = group;
+
+
+    teachers[index].set_groups(t_groups, len_gr + 1);
 
     dump_data(len, teachers);
 
@@ -682,13 +698,18 @@ void interface::authorization(int call){
 
 
 void interface::show_curr_groups(teacher a){
-    int groups[100]{}, i = 0;
+
+    int i = 0, len = a.get_len_groups();
+
+    int* groups = new int[len];
+
     a.get_groups(groups);
+
     cout << "\nVashi gruppi: ";
-    while (groups[i] != 0){
+    for(i; i < len; i++){
         cout << groups[i] << " ";
-        i++;
     }
+
     cout << endl;
 }
 
@@ -711,14 +732,14 @@ void interface::add_to_group(teacher a){
         while (1){
             cout << "\nVvedite gruppu: ";
             cin >> group;
-            int teacher_groups[100], i = 0, flag = 0;
+            int i = 0, flag = 0, len_gr = a.get_len_groups();
+            int* teacher_groups = new int[len_gr];
             a.get_groups(teacher_groups);
-            while (teacher_groups[i] != 0) {
+            for (i; i < len_gr; i++) {
                 if (teacher_groups[i] == group){
                     flag = 1;
                     break;
                 }
-                i++;
             }
             if (!flag) cout << "Net dostupa k etoy gruppe!\n";
             else break;
@@ -815,18 +836,28 @@ void interface::create_password(char* password){
 
 
 int interface::get_people(vector <teacher> &arr){
-    ifstream f;
+    ifstream f, ff;
     int i = 0;
     f.open(teacher_filename);
+    ff.open(groups_filename);
 
     teacher a;
 
     while (f.read((char*)&a, sizeof(teacher))){
-        arr.push_back(a);
         i++;
+        int len = a.get_len_groups(), j = 0;
+        int* groups = new int[len];
+
+        for (j; j < len; j++){
+            ff >> groups[j];
+        }
+
+        a.set_groups(groups, len);
+        arr.push_back(a);
     }
 
     f.close();
+    ff.close();
 
     return i;
 }
@@ -889,10 +920,20 @@ int interface::is_login_exist(char* login){
 
 
 void interface::append_data(teacher &a){
+
     fstream f;
     f.open(teacher_filename, fstream::app);
     f.write((char*)&a, sizeof(teacher));
     f.close();
+
+    fstream ff;
+    ff.open(groups_filename, fstream::app);
+
+    int len = a.get_len_groups(), i = 0;
+    int* groups = new int[len];
+    a.get_groups(groups);
+    for (i; i < len; i++) ff << groups[i] << " ";
+    ff.close();
 }
 
 void interface::append_data(student &a){
@@ -948,11 +989,12 @@ void interface::show_registration_interface(){
 
 
 // Вводим группы....................................................................
-
-    int teacher_groups[100]{}, group, len_tg = 0;
+    int* teacher_groups;
+    int group, len_tg = 0;
 
     cout << "\nVvedite kol-vo grupp: ";
     cin >> n;
+    teacher_groups = new int[n];
     cout << "Vvedite gruppu " << 1 << ": ";
     cin >> teacher_groups[0];
 
@@ -997,9 +1039,8 @@ void interface::show_registration_interface(){
     char password[50];
     create_password(password);
 
-
     a.set_subject(teacher_subjects);
-    a.set_groups(teacher_groups);
+    a.set_groups(teacher_groups, n);
     a.set_login(login);
     a.set_password(password);
 
