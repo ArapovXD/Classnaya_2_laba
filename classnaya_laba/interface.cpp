@@ -21,20 +21,8 @@ void interface::show_interface(){
     }
 }
 
-void interface::show_student_interface(char* my_login){
+void interface::show_student_interface(student a){
     while (1){
-///Чтобы после каждой выполненной команды обновлялся класс ученика
-        vector <student> students;
-        student a;
-        int len = get_people(students), i = 0;
-        for (i; i < len; i++){
-            char s_login[50];
-            students[i].get_login(s_login);
-            if (!strcmp(my_login, s_login)){
-                a = students[i];
-                break;
-            }
-        }
 
         int call;
         cout << "\nPosmotret ocenki - 1\n";
@@ -678,7 +666,7 @@ void interface::authorization(int call){
                 cout << "Dobro pojalovat!";
                 char s_login[50];
                 students[res - 1].get_login(s_login);
-                show_student_interface(s_login);
+                show_student_interface(students[res - 1]);
                 break;
             }
         }

@@ -4,7 +4,10 @@
 using namespace std;
 
 
-
+/**
+@class teacher
+Класс учителя, доступ к приватным полям осуществляется через геттеры, сеттеры
+*/
 class teacher{
 private:
     int subjects[100];

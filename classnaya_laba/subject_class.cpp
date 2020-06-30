@@ -6,6 +6,7 @@
 using namespace std;
 
 
+int subject_index::get_len(){return index_next;}
 
 void subject_index::get_subject(char* to_copy, int index){
 
